@@ -1,0 +1,38 @@
+{
+  "name": "data-transfer-helper",
+  "version": "1.0.0",
+  "description": "Helper Function for handling DnD DataTransfer Events",
+  "main": "./dist/index.js",
+  "module": "./dist/es5/index.js",
+  "es2020": "./dist/es2020/index.js",
+  "typings": "./dist/index.d.ts",
+  "keywords": [
+    "drag-and-drop",
+    "DataTransfer",
+    "FileSystem",
+    "File"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist/*",
+    "prebuild": "npm run clean",
+    "build": "run-p build:*",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "build:es5": "tsc -p ./tsconfig.es5.json",
+    "build:es2020": "tsc -p ./tsconfig.es2020.json",
+    "build:types": "tsc -p ./tsconfig.types.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/alexfriesen/data-transfer-helper.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alexfriesen/data-transfer-helper/issues"
+  },
+  "homepage": "https://github.com/alexfriesen/data-transfer-helper#readme",
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "typescript": "^4.9.5"
+  }
+}
