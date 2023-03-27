@@ -17,6 +17,7 @@
     "clean": "rm -rf dist/*",
     "prebuild": "npm run clean",
     "build": "run-p build:*",
+    "prepublish": "npm run build",
     "build:es2015": "tsc -p ./tsconfig.es2015.json",
     "build:es2020": "tsc -p ./tsconfig.es2020.json",
     "build:types": "tsc -p ./tsconfig.types.json"
