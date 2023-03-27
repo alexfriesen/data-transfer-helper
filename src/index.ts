@@ -13,3 +13,8 @@ export async function parseDataTransferFiles(
 
   return [];
 }
+
+export async function parseFilesFromEvent(event: DragEvent) {
+  const list = event.dataTransfer?.items;
+  return parseDataTransferFiles(list);
+}
