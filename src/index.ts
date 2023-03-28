@@ -1,4 +1,4 @@
-import { parseDataTransferItem } from "./filesystem";
+import { parseDataTransferItem } from "./filesystem.js";
 
 export async function parseDataTransferFiles(
   list: DataTransferItemList | undefined
