@@ -1,5 +1,6 @@
 .github
 node_modules
+example
 src
 
 package-lock.json
