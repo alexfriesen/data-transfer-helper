@@ -1,6 +1,6 @@
 {
   "name": "data-transfer-helper",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "description": "Helper Function for handling DnD DataTransfer Events",
   "main": "./dist/es2015/index.js",
