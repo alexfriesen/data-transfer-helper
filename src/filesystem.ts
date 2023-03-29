@@ -2,6 +2,7 @@ export async function parseDataTransferItem(
   item: DataTransferItem
 ): Promise<File[]> {
   if (supportsFileSystemAccessAPI) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/getAsFileSystemHandle
     // @ts-ignore not yet added to lib.dom.d.ts
     const handle = await item.getAsFileSystemHandle();
     if (handle) {
@@ -10,6 +11,7 @@ export async function parseDataTransferItem(
   }
 
   if (supportsWebkitGetAsEntry) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/webkitGetAsEntry
     const entry = item.webkitGetAsEntry();
     if (entry) {
       return readFileSystemEntryAsync(entry);
@@ -90,16 +92,16 @@ export function isFileSystemFile(
 export function isFileSystemDirectoryHandle(
   handle?: FileSystemHandle | null
 ): handle is FileSystemDirectoryHandle {
-  return handle?.kind === 'directory';
+  return handle?.kind === "directory";
 }
 
 export function isFileSystemFileHanle(
   handle?: FileSystemHandle | null
 ): handle is FileSystemFileHandle {
-  return handle?.kind === 'file';
+  return handle?.kind === "file";
 }
 
 const supportsFileSystemAccessAPI =
-  'getAsFileSystemHandle' in DataTransferItem.prototype;
+  "getAsFileSystemHandle" in DataTransferItem.prototype;
 const supportsWebkitGetAsEntry =
-  'webkitGetAsEntry' in DataTransferItem.prototype;
+  "webkitGetAsEntry" in DataTransferItem.prototype;

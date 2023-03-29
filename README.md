@@ -1,5 +1,9 @@
 # data-transfer-helper
-Helper Function for handling DnD DataTransfer Events
+Helper Function for handling DnD DataTransfer Events.
+
+Fetures: 
+- parse dropped directories via File System Access API or webkitGetAsEntry
+- uses generator functions
 
 ## Example:
 ```typescript
