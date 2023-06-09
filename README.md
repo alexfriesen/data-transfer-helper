@@ -4,6 +4,7 @@ Helper Function for handling DnD DataTransfer Events.
 Fetures: 
 - parse dropped directories via File System Access API or webkitGetAsEntry
 - uses generator functions
+- types provided
 
 ## Example:
 ```typescript

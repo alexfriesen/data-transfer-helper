@@ -2,8 +2,6 @@ export async function parseDataTransferItem(
   item: DataTransferItem
 ): Promise<File[]> {
   if (supportsFileSystemAccessAPI) {
-    // https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/getAsFileSystemHandle
-    // @ts-ignore not yet added to lib.dom.d.ts
     const handle = await item.getAsFileSystemHandle();
     if (handle) {
       return readFileSystemHandlesAsync(handle);
@@ -41,7 +39,6 @@ async function* readFileSystemHandlesRecursively(
       yield file;
     }
   } else if (isFileSystemDirectoryHandle(entry)) {
-    // @ts-ignore not yet added to lib.dom.d.ts
     for await (const handle of entry.values()) {
       yield* readFileSystemHandlesRecursively(handle);
     }
