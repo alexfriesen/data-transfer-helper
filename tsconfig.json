@@ -1,6 +1,9 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "module": "es2015",
+    "target": "es2015",
+    "moduleResolution": "Bundler",
     "baseUrl": "./src",
     "outDir": "./dist",
     "strict": true,
