@@ -35,7 +35,6 @@ function renderFiles() {
 
   for (const file of droppedFiles) {
     filesSection?.appendChild(createFileDiv(file));
-    filesSection?.appendChild(document.createElement("hr"));
   }
 }
 
