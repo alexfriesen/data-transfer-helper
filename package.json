@@ -19,6 +19,7 @@
     "prebuild": "npm run clean",
     "build": "run-p build:*",
     "prepublish": "npm run build",
+    "build:example": "esbuild ./example/index.ts --bundle --outfile=./example/dist/index.js",
     "build:es2015": "tsc -p ./tsconfig.es2015.json",
     "build:es2020": "tsc -p ./tsconfig.es2020.json",
     "build:types": "tsc -p ./tsconfig.types.json"
@@ -35,6 +36,7 @@
   "homepage": "https://github.com/alexfriesen/data-transfer-helper#readme",
   "devDependencies": {
     "@types/wicg-file-system-access": "^2023.10.1",
+    "esbuild": "^0.19.5",
     "npm-run-all": "^4.1.5",
     "typescript": "^5.0.0"
   }

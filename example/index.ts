@@ -1,7 +1,8 @@
-import { parseFilesFromEvent } from "../dist/es2020/index.js";
+import { parseFilesFromEvent } from "../src/index";
 
-const droppedFiles = [];
+const droppedFiles: File[] = [];
 
+// @ts-ignore
 const fileSizeFormat = new Intl.NumberFormat(undefined, {
   style: "unit",
   unit: "byte",
@@ -28,15 +29,17 @@ document.addEventListener("drop", async function (event) {
 
 const filesSection = document.getElementById("files");
 function renderFiles() {
-  filesSection.innerHTML = "";
+  if (filesSection) {
+    filesSection.innerHTML = "";
+  }
 
   for (const file of droppedFiles) {
-    filesSection.appendChild(createFileDiv(file));
-    filesSection.appendChild(document.createElement("hr"));
+    filesSection?.appendChild(createFileDiv(file));
+    filesSection?.appendChild(document.createElement("hr"));
   }
 }
 
-function createFileDiv(file) {
+function createFileDiv(file: File) {
   const div = document.createElement("div");
 
   const nameElement = document.createElement("div");
