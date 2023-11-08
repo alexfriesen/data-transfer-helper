@@ -6,14 +6,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>data-transfer-helper</title>
     <script type="module" src="./dist/index.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0.5rem;
+        padding: 0.5rem;
+        border: #ccc dashed 2px;
+      }
+      #files {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 0.5rem;
+      }
+      #files > div {
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+      }
+    </style>
   </head>
   <body>
     <section class="droparea">
-      <p><strong>Drag and Drop Files & Directories here</strong></p>
+      <p>Drag and Drop <strong>Files & Directories</strong> here</p>
     </section>
 
     <section>
-      <strong>Files added:</strong>
+      <p>Files added:</p>
 
       <div id="files"></div>
     </section>
