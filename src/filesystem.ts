@@ -27,10 +27,10 @@ export async function parseDataTransferItem(
 async function readFileSystemHandlesAsync(
   entry: FileSystemHandle
 ): Promise<File[]> {
-  return generatorToArray(readFileSystemHandlesRecursively(entry));
+  return generatorToArray(readFileSystemHandleRecursively(entry));
 }
 
-async function* readFileSystemHandlesRecursively(
+async function* readFileSystemHandleRecursively(
   entry: FileSystemHandle
 ): AsyncGenerator<File> {
   if (isFileSystemFileHanle(entry)) {
@@ -40,7 +40,7 @@ async function* readFileSystemHandlesRecursively(
     }
   } else if (isFileSystemDirectoryHandle(entry)) {
     for await (const handle of entry.values()) {
-      yield* readFileSystemHandlesRecursively(handle);
+      yield* readFileSystemHandleRecursively(handle);
     }
   }
 }
