@@ -21,9 +21,9 @@
     return [];
   }
   async function readFileSystemHandlesAsync(entry) {
-    return generatorToArray(readFileSystemHandlesRecursively(entry));
+    return generatorToArray(readFileSystemHandleRecursively(entry));
   }
-  async function* readFileSystemHandlesRecursively(entry) {
+  async function* readFileSystemHandleRecursively(entry) {
     if (isFileSystemFileHanle(entry)) {
       const file = await entry.getFile();
       if (file) {
@@ -31,7 +31,7 @@
       }
     } else if (isFileSystemDirectoryHandle(entry)) {
       for await (const handle of entry.values()) {
-        yield* readFileSystemHandlesRecursively(handle);
+        yield* readFileSystemHandleRecursively(handle);
       }
     }
   }
