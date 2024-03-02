@@ -3,10 +3,8 @@
   "version": "1.0.3",
   "type": "module",
   "description": "Helper Function for handling DnD DataTransfer Events",
-  "main": "./dist/es2015/index.js",
-  "module": "./dist/es2020/index.js",
-  "es2015": "./dist/es2015/index.js",
-  "es2020": "./dist/es2020/index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "typings": "./dist/index.d.ts",
   "keywords": [
     "drag-and-drop",
@@ -20,9 +18,7 @@
     "build": "run-p build:*",
     "prepublish": "npm run build",
     "build:example": "esbuild ./example/index.ts --bundle --outfile=./example/dist/index.js",
-    "build:es2015": "tsc -p ./tsconfig.es2015.json",
-    "build:es2020": "tsc -p ./tsconfig.es2020.json",
-    "build:types": "tsc -p ./tsconfig.types.json"
+    "build:lib": "tsc -p ./tsconfig.json"
   },
   "repository": {
     "type": "git",

@@ -1,13 +1,14 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "module": "es2015",
-    "target": "es2015",
+    "module": "esnext",
+    "target": "esnext",
     "moduleResolution": "Bundler",
     "baseUrl": "./src",
     "outDir": "./dist",
     "strict": true,
     "sourceMap": true,
+    "declaration": true,
     "noImplicitReturns": true,
     "downlevelIteration": true,
     "forceConsistentCasingInFileNames": true,
