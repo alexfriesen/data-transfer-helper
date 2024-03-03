@@ -1,10 +1,15 @@
-export async function parseDataTransferItem(
-  item: DataTransferItem
-): Promise<File[]> {
+import { appendPath, extendFile, generatorToArray, supportsFileSystemAccessAPI, supportsWebkitGetAsEntry } from "./utils";
+import { Options } from "./options";
+
+export const parseDataTransferItem = async (
+  item: DataTransferItem,
+  options?: Options
+): Promise<File[]> => {
   if (supportsFileSystemAccessAPI) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/getAsFileSystemHandle
     const handle = await item.getAsFileSystemHandle();
     if (handle) {
-      return readFileSystemHandlesAsync(handle);
+      return readFileSystemHandlesAsync(handle, options);
     }
   }
 
@@ -12,7 +17,7 @@ export async function parseDataTransferItem(
     // https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/webkitGetAsEntry
     const entry = item.webkitGetAsEntry();
     if (entry) {
-      return readFileSystemEntryAsync(entry);
+      return readFileSystemEntryAsync(entry, options);
     }
   }
 
@@ -22,83 +27,84 @@ export async function parseDataTransferItem(
   }
 
   return [];
-}
+};
 
-async function readFileSystemHandlesAsync(
-  entry: FileSystemHandle
-): Promise<File[]> {
-  return generatorToArray(readFileSystemHandleRecursively(entry));
-}
+const readFileSystemHandlesAsync = async (
+  entry: FileSystemHandle,
+  options?: Options
+): Promise<File[]> =>
+  generatorToArray(readFileSystemHandleRecursively(entry, options));
 
 async function* readFileSystemHandleRecursively(
-  entry: FileSystemHandle
+  entry: FileSystemHandle,
+  options?: Options
 ): AsyncGenerator<File> {
   if (isFileSystemFileHanle(entry)) {
-    const file = await entry.getFile();
+    const file = extendFile(await entry.getFile().catch(() => null), options);
     if (file) {
       yield file;
     }
   } else if (isFileSystemDirectoryHandle(entry)) {
     for await (const handle of entry.values()) {
-      yield* readFileSystemHandleRecursively(handle);
+      yield* readFileSystemHandleRecursively(handle, {
+        ...options,
+        baseDirectory: appendPath(options?.baseDirectory || "", entry.name),
+      });
     }
   }
 }
 
-async function readFileSystemEntryAsync(
-  entry: FileSystemEntry
-): Promise<File[]> {
-  return generatorToArray(readFileSystemEntryRecursively(entry));
-}
+const readFileSystemEntryAsync = async (
+  entry: FileSystemEntry,
+  options?: Options
+): Promise<File[]> =>
+  generatorToArray(readFileSystemEntryRecursively(entry, options));
 
 async function* readFileSystemEntryRecursively(
-  entry: FileSystemEntry
+  entry: FileSystemEntry,
+  options?: Options
 ): AsyncGenerator<File> {
   if (isFileSystemFile(entry)) {
-    const file = await new Promise<File>((resolve) => entry.file(resolve));
-    yield file;
+    const file = extendFile(await resolveFileSystemFileEntry(entry), options);
+    if (file) {
+      yield file;
+    }
   } else if (isFileSystemDirectory(entry)) {
-    const reader = entry.createReader();
-    const entries = await new Promise<FileSystemEntry[]>((resolve) =>
-      reader.readEntries(resolve)
-    );
+    const entries = await resolveFileSystemDirectoryEntry(entry);
     for (const entry of entries) {
-      yield* readFileSystemEntryRecursively(entry);
+      yield* readFileSystemEntryRecursively(entry, {
+        ...options,
+        baseDirectory: appendPath(options?.baseDirectory || "", entry.name),
+      });
     }
   }
 }
 
-async function generatorToArray<T>(generator: AsyncIterable<T>): Promise<T[]> {
-  const items: T[] = [];
-  for await (const item of generator) items.push(item);
-  return items;
-}
+const resolveFileSystemFileEntry = (
+  entry: FileSystemFileEntry
+): Promise<File | null> =>
+  new Promise((resolve, reject) => entry.file(resolve, reject));
 
-export function isFileSystemDirectory(
+const resolveFileSystemDirectoryEntry = (
+  entry: FileSystemDirectoryEntry
+): Promise<FileSystemEntry[]> =>
+  new Promise((resolve, reject) => {
+    const reader = entry.createReader();
+    reader.readEntries(resolve, reject);
+  });
+
+export const isFileSystemDirectory = (
   entry?: FileSystemEntry | null
-): entry is FileSystemDirectoryEntry {
-  return entry?.isDirectory === true;
-}
+): entry is FileSystemDirectoryEntry => entry?.isDirectory === true;
 
-export function isFileSystemFile(
+export const isFileSystemFile = (
   entry?: FileSystemEntry | null
-): entry is FileSystemFileEntry {
-  return entry?.isFile === true;
-}
+): entry is FileSystemFileEntry => entry?.isFile === true;
 
-export function isFileSystemDirectoryHandle(
+export const isFileSystemDirectoryHandle = (
   handle?: FileSystemHandle | null
-): handle is FileSystemDirectoryHandle {
-  return handle?.kind === "directory";
-}
+): handle is FileSystemDirectoryHandle => handle?.kind === "directory";
 
-export function isFileSystemFileHanle(
+export const isFileSystemFileHanle = (
   handle?: FileSystemHandle | null
-): handle is FileSystemFileHandle {
-  return handle?.kind === "file";
-}
-
-const supportsFileSystemAccessAPI =
-  "getAsFileSystemHandle" in DataTransferItem.prototype;
-const supportsWebkitGetAsEntry =
-  "webkitGetAsEntry" in DataTransferItem.prototype;
+): handle is FileSystemFileHandle => handle?.kind === "file";
