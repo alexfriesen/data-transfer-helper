@@ -20,3 +20,5 @@ export async function parseFilesFromEvent(event: DragEvent, options?: Options) {
   const list = event.dataTransfer?.items;
   return parseDataTransferFiles(list, options);
 }
+
+export { dotFileFilter } from "./filters/dot-files";

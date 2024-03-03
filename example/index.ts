@@ -1,4 +1,4 @@
-import { parseFilesFromEvent } from "../src/index";
+import { dotFileFilter, parseFilesFromEvent } from "../src/index";
 
 const droppedFiles: File[] = [];
 
@@ -24,6 +24,9 @@ document.addEventListener("drop", async function (event) {
   console.time("parseFilesFromEvent");
   const files = await parseFilesFromEvent(event, {
     addDirectoryName: true,
+    filters: [
+      dotFileFilter,
+    ]
   });
   console.timeEnd("parseFilesFromEvent");
   droppedFiles.push(...files);

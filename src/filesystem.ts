@@ -1,5 +1,6 @@
 import {
   appendPath,
+  checkFile,
   extendFile,
   generatorToArray,
   supportsFileSystemAccessAPI,
@@ -31,7 +32,7 @@ export const parseDataTransferItem = async (
   }
 
   const file = item.getAsFile();
-  if (file) {
+  if (file && checkFile(file, options)) {
     return [file];
   }
 
@@ -50,7 +51,7 @@ async function* readFileSystemHandleRecursively(
 ): AsyncGenerator<File> {
   if (isFileSystemFileHanle(entry)) {
     const file = extendFile(await entry.getFile().catch(() => null), options);
-    if (file) {
+    if (file && checkFile(file, options)) {
       yield file;
     }
   } else if (isFileSystemDirectoryHandle(entry)) {
@@ -76,7 +77,7 @@ async function* readFileSystemEntryRecursively(
 ): AsyncGenerator<File> {
   if (isFileSystemFile(entry)) {
     const file = extendFile(await resolveFileSystemFileEntry(entry), options);
-    if (file) {
+    if (file && checkFile(file, options)) {
       yield file;
     }
   } else if (isFileSystemDirectory(entry)) {

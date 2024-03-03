@@ -28,6 +28,16 @@ export const extendFile = (file: File | null, options?: Options) => {
   return file;
 };
 
+export const checkFile = (file: File, options?: Options) => {
+  if (options?.filters) {
+    for (const filter of options.filters) {
+      if (!filter(file)) return false;
+    }
+  }
+
+  return true;
+};
+
 export const supportsFileSystemAccessAPI =
   "getAsFileSystemHandle" in DataTransferItem.prototype;
 export const supportsWebkitGetAsEntry =
