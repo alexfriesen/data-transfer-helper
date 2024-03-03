@@ -1,11 +1,20 @@
-import { appendPath, extendFile, generatorToArray, supportsFileSystemAccessAPI, supportsWebkitGetAsEntry } from "./utils";
+import {
+  appendPath,
+  extendFile,
+  generatorToArray,
+  supportsFileSystemAccessAPI,
+  supportsWebkitGetAsEntry,
+} from "./utils";
 import { Options } from "./options";
 
 export const parseDataTransferItem = async (
   item: DataTransferItem,
   options?: Options
 ): Promise<File[]> => {
-  if (supportsFileSystemAccessAPI) {
+  if (
+    supportsFileSystemAccessAPI &&
+    options?.disableFileSystemAccessAPI !== true
+  ) {
     // https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/getAsFileSystemHandle
     const handle = await item.getAsFileSystemHandle();
     if (handle) {
@@ -45,10 +54,11 @@ async function* readFileSystemHandleRecursively(
       yield file;
     }
   } else if (isFileSystemDirectoryHandle(entry)) {
+    const baseDirectory = appendPath(options?.baseDirectory || "", entry.name);
     for await (const handle of entry.values()) {
       yield* readFileSystemHandleRecursively(handle, {
         ...options,
-        baseDirectory: appendPath(options?.baseDirectory || "", entry.name),
+        baseDirectory,
       });
     }
   }
@@ -70,11 +80,12 @@ async function* readFileSystemEntryRecursively(
       yield file;
     }
   } else if (isFileSystemDirectory(entry)) {
+    const baseDirectory = appendPath(options?.baseDirectory || "", entry.name);
     const entries = await resolveFileSystemDirectoryEntry(entry);
     for (const entry of entries) {
       yield* readFileSystemEntryRecursively(entry, {
         ...options,
-        baseDirectory: appendPath(options?.baseDirectory || "", entry.name),
+        baseDirectory,
       });
     }
   }
