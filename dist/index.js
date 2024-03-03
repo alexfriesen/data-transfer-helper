@@ -1,17 +1,42 @@
 "use strict";
 (() => {
+  // src/utils.ts
+  var renameFile = (file, name) => {
+    const renamed = new File([file], name, {
+      type: file.type,
+      lastModified: file.lastModified
+    });
+    return renamed;
+  };
+  async function generatorToArray(generator) {
+    const items = [];
+    for await (const item of generator)
+      items.push(item);
+    return items;
+  }
+  var appendPath = (base, path) => base + path + "/";
+  var extendFile = (file, options) => {
+    if (file && options?.addDirectoryName) {
+      const filename = options.baseDirectory + file.name;
+      return renameFile(file, filename);
+    }
+    return file;
+  };
+  var supportsFileSystemAccessAPI = "getAsFileSystemHandle" in DataTransferItem.prototype;
+  var supportsWebkitGetAsEntry = "webkitGetAsEntry" in DataTransferItem.prototype;
+
   // src/filesystem.ts
-  async function parseDataTransferItem(item) {
+  var parseDataTransferItem = async (item, options) => {
     if (supportsFileSystemAccessAPI) {
       const handle = await item.getAsFileSystemHandle();
       if (handle) {
-        return readFileSystemHandlesAsync(handle);
+        return readFileSystemHandlesAsync(handle, options);
       }
     }
     if (supportsWebkitGetAsEntry) {
       const entry = item.webkitGetAsEntry();
       if (entry) {
-        return readFileSystemEntryAsync(entry);
+        return readFileSystemEntryAsync(entry, options);
       }
     }
     const file = item.getAsFile();
@@ -19,74 +44,64 @@
       return [file];
     }
     return [];
-  }
-  async function readFileSystemHandlesAsync(entry) {
-    return generatorToArray(readFileSystemHandleRecursively(entry));
-  }
-  async function* readFileSystemHandleRecursively(entry) {
+  };
+  var readFileSystemHandlesAsync = async (entry, options) => generatorToArray(readFileSystemHandleRecursively(entry, options));
+  async function* readFileSystemHandleRecursively(entry, options) {
     if (isFileSystemFileHanle(entry)) {
-      const file = await entry.getFile();
+      const file = extendFile(await entry.getFile().catch(() => null), options);
       if (file) {
         yield file;
       }
     } else if (isFileSystemDirectoryHandle(entry)) {
       for await (const handle of entry.values()) {
-        yield* readFileSystemHandleRecursively(handle);
+        yield* readFileSystemHandleRecursively(handle, {
+          ...options,
+          baseDirectory: appendPath(options?.baseDirectory || "", entry.name)
+        });
       }
     }
   }
-  async function readFileSystemEntryAsync(entry) {
-    return generatorToArray(readFileSystemEntryRecursively(entry));
-  }
-  async function* readFileSystemEntryRecursively(entry) {
+  var readFileSystemEntryAsync = async (entry, options) => generatorToArray(readFileSystemEntryRecursively(entry, options));
+  async function* readFileSystemEntryRecursively(entry, options) {
     if (isFileSystemFile(entry)) {
-      const file = await new Promise((resolve) => entry.file(resolve));
-      yield file;
+      const file = extendFile(await resolveFileSystemFileEntry(entry), options);
+      if (file) {
+        yield file;
+      }
     } else if (isFileSystemDirectory(entry)) {
-      const reader = entry.createReader();
-      const entries = await new Promise(
-        (resolve) => reader.readEntries(resolve)
-      );
+      const entries = await resolveFileSystemDirectoryEntry(entry);
       for (const entry2 of entries) {
-        yield* readFileSystemEntryRecursively(entry2);
+        yield* readFileSystemEntryRecursively(entry2, {
+          ...options,
+          baseDirectory: appendPath(options?.baseDirectory || "", entry2.name)
+        });
       }
     }
   }
-  async function generatorToArray(generator) {
-    const items = [];
-    for await (const item of generator)
-      items.push(item);
-    return items;
-  }
-  function isFileSystemDirectory(entry) {
-    return entry?.isDirectory === true;
-  }
-  function isFileSystemFile(entry) {
-    return entry?.isFile === true;
-  }
-  function isFileSystemDirectoryHandle(handle) {
-    return handle?.kind === "directory";
-  }
-  function isFileSystemFileHanle(handle) {
-    return handle?.kind === "file";
-  }
-  var supportsFileSystemAccessAPI = "getAsFileSystemHandle" in DataTransferItem.prototype;
-  var supportsWebkitGetAsEntry = "webkitGetAsEntry" in DataTransferItem.prototype;
+  var resolveFileSystemFileEntry = (entry) => new Promise((resolve, reject) => entry.file(resolve, reject));
+  var resolveFileSystemDirectoryEntry = (entry) => new Promise((resolve, reject) => {
+    const reader = entry.createReader();
+    reader.readEntries(resolve, reject);
+  });
+  var isFileSystemDirectory = (entry) => entry?.isDirectory === true;
+  var isFileSystemFile = (entry) => entry?.isFile === true;
+  var isFileSystemDirectoryHandle = (handle) => handle?.kind === "directory";
+  var isFileSystemFileHanle = (handle) => handle?.kind === "file";
 
   // src/index.ts
-  async function parseDataTransferFiles(list) {
+  async function parseDataTransferFiles(list, options) {
     if (list) {
       const items = Array.from(list).filter((item) => item.kind === "file");
       const fileChunks = await Promise.all(
-        items.map(async (item) => parseDataTransferItem(item))
+        items.map(async (item) => parseDataTransferItem(item, options))
       );
       return fileChunks.flat();
     }
     return [];
   }
-  async function parseFilesFromEvent(event) {
+  async function parseFilesFromEvent(event, options) {
     const list = event.dataTransfer?.items;
-    return parseDataTransferFiles(list);
+    return parseDataTransferFiles(list, options);
   }
 
   // example/index.ts
@@ -106,7 +121,9 @@
   document.addEventListener("drop", async function(event) {
     event.preventDefault();
     event.stopPropagation();
-    const files = await parseFilesFromEvent(event);
+    console.time("parseFilesFromEvent");
+    const files = await parseFilesFromEvent(event, { addDirectoryName: true });
+    console.timeEnd("parseFilesFromEvent");
     droppedFiles.push(...files);
     renderFiles();
   });

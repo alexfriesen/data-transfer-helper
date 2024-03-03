@@ -21,7 +21,9 @@ document.addEventListener("drop", async function (event) {
   event.preventDefault();
   event.stopPropagation();
 
-  const files = await parseFilesFromEvent(event);
+  console.time("parseFilesFromEvent");
+  const files = await parseFilesFromEvent(event, { addDirectoryName: true });
+  console.timeEnd("parseFilesFromEvent");
   droppedFiles.push(...files);
 
   renderFiles();
