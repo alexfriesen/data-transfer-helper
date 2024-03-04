@@ -1,4 +1,4 @@
-import { Options } from "./options";
+import { Options } from "../options";
 
 export const renameFile = (file: File, name: string): File => {
   const renamed = new File([file], name, {
@@ -7,17 +7,6 @@ export const renameFile = (file: File, name: string): File => {
   });
   return renamed;
 };
-
-export async function generatorToArray<T>(
-  generator: AsyncIterable<T>
-): Promise<T[]> {
-  const items: T[] = [];
-  for await (const item of generator) items.push(item);
-  return items;
-}
-
-export const appendPath = (base: string, path: string): string =>
-  base + path + "/";
 
 export const extendFile = (file: File | null, options?: Options) => {
   if (file && options?.addDirectoryName) {
@@ -37,8 +26,3 @@ export const checkFile = (file: File, options?: Options) => {
 
   return true;
 };
-
-export const supportsFileSystemAccessAPI =
-  "getAsFileSystemHandle" in DataTransferItem.prototype;
-export const supportsWebkitGetAsEntry =
-  "webkitGetAsEntry" in DataTransferItem.prototype;

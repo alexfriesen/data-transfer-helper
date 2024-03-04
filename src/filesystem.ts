@@ -1,12 +1,10 @@
+import { Options } from "./options";
+import { checkFile, extendFile } from "./utils/file";
+import { appendPath, generatorToArray } from "./utils/utils";
 import {
-  appendPath,
-  checkFile,
-  extendFile,
-  generatorToArray,
   supportsFileSystemAccessAPI,
   supportsWebkitGetAsEntry,
-} from "./utils";
-import { Options } from "./options";
+} from "./utils/suppot";
 
 export const parseDataTransferItem = async (
   item: DataTransferItem,
@@ -39,7 +37,7 @@ export const parseDataTransferItem = async (
   return [];
 };
 
-const readFileSystemHandlesAsync = async (
+export const readFileSystemHandlesAsync = async (
   entry: FileSystemHandle,
   options?: Options
 ): Promise<File[]> =>
@@ -65,7 +63,7 @@ async function* readFileSystemHandleRecursively(
   }
 }
 
-const readFileSystemEntryAsync = async (
+export const readFileSystemEntryAsync = async (
   entry: FileSystemEntry,
   options?: Options
 ): Promise<File[]> =>
