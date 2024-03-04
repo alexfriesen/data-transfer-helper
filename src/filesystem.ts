@@ -12,7 +12,8 @@ export const parseDataTransferItem = async (
 ): Promise<File[]> => {
   if (
     supportsFileSystemAccessAPI &&
-    options?.disableFileSystemAccessAPI !== true
+    // disabled by default until this bug is resolved: https://issues.chromium.org/issues/40944439
+    options?.enableFileSystemAccessAPI === true
   ) {
     // https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/getAsFileSystemHandle
     const handle = await item.getAsFileSystemHandle();

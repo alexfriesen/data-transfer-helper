@@ -75,9 +75,10 @@ document.addEventListener("drop", async function (event: DragEvent) {
 });
 ```
 
-### disableFileSystemAccessAPI
+### enableFileSystemAccessAPI
 
-You can provide a flag to disable the experimetal File System Access API.
+You can provide a flag to enable the experimetal [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/getAsFileSystemHandle).
+
 
 ```typescript
 import { parseFilesFromEvent } from "data-transfer-helper";
@@ -87,7 +88,7 @@ document.addEventListener("drop", async function (event: DragEvent) {
   event.stopPropagation();
 
   const files = await parseFilesFromEvent(event, {
-    disableFileSystemAccessAPI: true,
+    enableFileSystemAccessAPI: true,
   });
   // files will fallback to webkitGetAsEntry and getFile()
 });

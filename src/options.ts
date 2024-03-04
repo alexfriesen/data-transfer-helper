@@ -3,6 +3,6 @@ export type FilterFn = (file: File) => boolean;
 export interface Options {
   addDirectoryName?: boolean;
   baseDirectory?: string;
-  disableFileSystemAccessAPI?: boolean;
+  enableFileSystemAccessAPI?: boolean;
   filters?: FilterFn[];
 }
