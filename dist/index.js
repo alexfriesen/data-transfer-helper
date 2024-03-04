@@ -1,6 +1,6 @@
 "use strict";
 (() => {
-  // src/utils.ts
+  // src/utils/file.ts
   var renameFile = (file, name) => {
     const renamed = new File([file], name, {
       type: file.type,
@@ -8,13 +8,6 @@
     });
     return renamed;
   };
-  async function generatorToArray(generator) {
-    const items = [];
-    for await (const item of generator)
-      items.push(item);
-    return items;
-  }
-  var appendPath = (base, path) => base + path + "/";
   var extendFile = (file, options) => {
     if (file && options?.addDirectoryName) {
       const filename = options.baseDirectory + file.name;
@@ -31,6 +24,17 @@
     }
     return true;
   };
+
+  // src/utils/utils.ts
+  async function generatorToArray(generator) {
+    const items = [];
+    for await (const item of generator)
+      items.push(item);
+    return items;
+  }
+  var appendPath = (base, path) => base + path + "/";
+
+  // src/utils/suppot.ts
   var supportsFileSystemAccessAPI = "getAsFileSystemHandle" in DataTransferItem.prototype;
   var supportsWebkitGetAsEntry = "webkitGetAsEntry" in DataTransferItem.prototype;
 
