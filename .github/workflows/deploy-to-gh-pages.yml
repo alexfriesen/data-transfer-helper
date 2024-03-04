@@ -20,9 +20,13 @@ jobs:
           node-version: "20"
 
       - name: Install and Build
-        run: |
-          npm ci
-          npm run build:example
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build:example
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
