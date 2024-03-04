@@ -40,7 +40,8 @@
 
   // src/filesystem.ts
   var parseDataTransferItem = async (item, options) => {
-    if (supportsFileSystemAccessAPI && options?.disableFileSystemAccessAPI !== true) {
+    if (supportsFileSystemAccessAPI && // disabled by default until this bug is resolved: https://issues.chromium.org/issues/40944439
+    options?.enableFileSystemAccessAPI === true) {
       const handle = await item.getAsFileSystemHandle();
       if (handle) {
         return readFileSystemHandlesAsync(handle, options);
