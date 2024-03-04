@@ -22,12 +22,21 @@
     }
     return file;
   };
+  var checkFile = (file, options) => {
+    if (options?.filters) {
+      for (const filter of options.filters) {
+        if (!filter(file))
+          return false;
+      }
+    }
+    return true;
+  };
   var supportsFileSystemAccessAPI = "getAsFileSystemHandle" in DataTransferItem.prototype;
   var supportsWebkitGetAsEntry = "webkitGetAsEntry" in DataTransferItem.prototype;
 
   // src/filesystem.ts
   var parseDataTransferItem = async (item, options) => {
-    if (supportsFileSystemAccessAPI) {
+    if (supportsFileSystemAccessAPI && options?.disableFileSystemAccessAPI !== true) {
       const handle = await item.getAsFileSystemHandle();
       if (handle) {
         return readFileSystemHandlesAsync(handle, options);
@@ -40,7 +49,7 @@
       }
     }
     const file = item.getAsFile();
-    if (file) {
+    if (file && checkFile(file, options)) {
       return [file];
     }
     return [];
@@ -49,14 +58,15 @@
   async function* readFileSystemHandleRecursively(entry, options) {
     if (isFileSystemFileHanle(entry)) {
       const file = extendFile(await entry.getFile().catch(() => null), options);
-      if (file) {
+      if (file && checkFile(file, options)) {
         yield file;
       }
     } else if (isFileSystemDirectoryHandle(entry)) {
+      const baseDirectory = appendPath(options?.baseDirectory || "", entry.name);
       for await (const handle of entry.values()) {
         yield* readFileSystemHandleRecursively(handle, {
           ...options,
-          baseDirectory: appendPath(options?.baseDirectory || "", entry.name)
+          baseDirectory
         });
       }
     }
@@ -65,15 +75,16 @@
   async function* readFileSystemEntryRecursively(entry, options) {
     if (isFileSystemFile(entry)) {
       const file = extendFile(await resolveFileSystemFileEntry(entry), options);
-      if (file) {
+      if (file && checkFile(file, options)) {
         yield file;
       }
     } else if (isFileSystemDirectory(entry)) {
+      const baseDirectory = appendPath(options?.baseDirectory || "", entry.name);
       const entries = await resolveFileSystemDirectoryEntry(entry);
       for (const entry2 of entries) {
         yield* readFileSystemEntryRecursively(entry2, {
           ...options,
-          baseDirectory: appendPath(options?.baseDirectory || "", entry2.name)
+          baseDirectory
         });
       }
     }
@@ -87,6 +98,10 @@
   var isFileSystemFile = (entry) => entry?.isFile === true;
   var isFileSystemDirectoryHandle = (handle) => handle?.kind === "directory";
   var isFileSystemFileHanle = (handle) => handle?.kind === "file";
+
+  // src/filters/dot-files.ts
+  var getFileName = (value) => value.split("/").pop() || "";
+  var dotFileFilter = (file) => !getFileName(file.name).startsWith(".");
 
   // src/index.ts
   async function parseDataTransferFiles(list, options) {
@@ -122,7 +137,12 @@
     event.preventDefault();
     event.stopPropagation();
     console.time("parseFilesFromEvent");
-    const files = await parseFilesFromEvent(event, { addDirectoryName: true });
+    const files = await parseFilesFromEvent(event, {
+      addDirectoryName: true,
+      filters: [
+        dotFileFilter
+      ]
+    });
     console.timeEnd("parseFilesFromEvent");
     droppedFiles.push(...files);
     renderFiles();
