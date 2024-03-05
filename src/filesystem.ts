@@ -1,17 +1,13 @@
 import { Options } from "./options";
 import { checkFile, extendFile } from "./utils/file";
 import { appendPath, generatorToArray } from "./utils/utils";
-import {
-  supportsFileSystemAccessAPI,
-  supportsWebkitGetAsEntry,
-} from "./utils/suppot";
 
 export const parseDataTransferItem = async (
   item: DataTransferItem,
   options?: Options
 ): Promise<File[]> => {
   if (
-    supportsFileSystemAccessAPI &&
+    "getAsFileSystemHandle" in item &&
     // disabled by default until this bug is resolved: https://issues.chromium.org/issues/40944439
     options?.enableFileSystemAccessAPI === true
   ) {
@@ -22,9 +18,9 @@ export const parseDataTransferItem = async (
     }
   }
 
-  if (supportsWebkitGetAsEntry) {
+  if ("getAsEntry" in item || "webkitGetAsEntry" in item) {
     // https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItem/webkitGetAsEntry
-    const entry = item.webkitGetAsEntry();
+    const entry = getFileSystemEntry(item);
     if (entry) {
       return readFileSystemEntryAsync(entry, options);
     }
@@ -36,6 +32,14 @@ export const parseDataTransferItem = async (
   }
 
   return [];
+};
+
+export const getFileSystemEntry = (
+  item: DataTransferItem & {
+    getAsEntry?: DataTransferItem["webkitGetAsEntry"];
+  }
+): FileSystemEntry | null => {
+  return item.getAsEntry?.() || item.webkitGetAsEntry();
 };
 
 export const readFileSystemHandlesAsync = async (
