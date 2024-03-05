@@ -1,5 +1,8 @@
 import { Options } from "../options";
 
+export const resolveFileName = (value: string | undefined) =>
+  value?.split("/").pop() || "";
+
 export const renameFile = (file: File, name: string): File => {
   const renamed = new File([file], name, {
     type: file.type,

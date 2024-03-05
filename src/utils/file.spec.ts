@@ -1,6 +1,18 @@
 import { describe, it, expect } from "vitest";
-import { checkFile, extendFile, renameFile } from "./file";
+import { checkFile, extendFile, resolveFileName, renameFile } from "./file";
 import { dotFileFilter } from "../filters/dot-files";
+
+describe("resolveFileName", () => {
+  it("should return the file name", () => {
+    const result = resolveFileName("test/file.txt");
+    expect(result).toStrictEqual("file.txt");
+  });
+
+  it("should return an empty string if the file name is empty", () => {
+    expect(resolveFileName("")).toStrictEqual("");
+    expect(resolveFileName(undefined)).toStrictEqual("");
+  });
+});
 
 describe("extendFile", () => {
   it("should return null if the file is null", () => {
