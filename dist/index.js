@@ -1,6 +1,7 @@
 "use strict";
 (() => {
   // src/utils/file.ts
+  var resolveFileName = (value) => value?.split("/").pop() || "";
   var renameFile = (file, name) => {
     const renamed = new File([file], name, {
       type: file.type,
@@ -34,21 +35,17 @@
   }
   var appendPath = (base, path) => base + path + "/";
 
-  // src/utils/suppot.ts
-  var supportsFileSystemAccessAPI = "getAsFileSystemHandle" in DataTransferItem.prototype;
-  var supportsWebkitGetAsEntry = "webkitGetAsEntry" in DataTransferItem.prototype;
-
   // src/filesystem.ts
   var parseDataTransferItem = async (item, options) => {
-    if (supportsFileSystemAccessAPI && // disabled by default until this bug is resolved: https://issues.chromium.org/issues/40944439
+    if ("getAsFileSystemHandle" in item && // disabled by default until this bug is resolved: https://issues.chromium.org/issues/40944439
     options?.enableFileSystemAccessAPI === true) {
       const handle = await item.getAsFileSystemHandle();
       if (handle) {
         return readFileSystemHandlesAsync(handle, options);
       }
     }
-    if (supportsWebkitGetAsEntry) {
-      const entry = item.webkitGetAsEntry();
+    if ("getAsEntry" in item || "webkitGetAsEntry" in item) {
+      const entry = getFileSystemEntry(item);
       if (entry) {
         return readFileSystemEntryAsync(entry, options);
       }
@@ -58,6 +55,9 @@
       return [file];
     }
     return [];
+  };
+  var getFileSystemEntry = (item) => {
+    return item.getAsEntry?.() || item.webkitGetAsEntry();
   };
   var readFileSystemHandlesAsync = async (entry, options) => generatorToArray(readFileSystemHandleRecursively(entry, options));
   async function* readFileSystemHandleRecursively(entry, options) {
@@ -105,8 +105,7 @@
   var isFileSystemFileHanle = (handle) => handle?.kind === "file";
 
   // src/filters/dot-files.ts
-  var getFileName = (value) => value.split("/").pop() || "";
-  var dotFileFilter = (file) => !getFileName(file.name).startsWith(".");
+  var dotFileFilter = (file) => !resolveFileName(file.name).startsWith(".");
 
   // src/index.ts
   async function parseDataTransferFiles(list, options) {
